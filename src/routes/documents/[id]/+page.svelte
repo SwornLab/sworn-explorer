@@ -157,8 +157,8 @@
 							width="100%"
 							height="auto"
 						>
-							<div class="card bg-gray-800 flex flex-col gap-8 p-4">
-								<span class="text-xl font-bold"> Not Supported </span>
+							<div class="card bg-gray-800 flex flex-col gap-8 p-4 text-white">
+								<span class="text-lg font-bold"> Not Supported </span>
 								<p class="grow">
 									Your browser does not support PDFs. You can download the PDF to view it:
 								</p>
