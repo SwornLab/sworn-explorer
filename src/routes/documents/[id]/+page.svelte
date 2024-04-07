@@ -85,6 +85,9 @@
 	}
 
 	const getDocumentFromUnchained = async (hash: string) => {
+		signatures = [];
+		signers = [];
+
 		const response = await AsyncDocument({ variables: { hash } });
 		const edges = response.data.correctnessReports.edges || [];
 
