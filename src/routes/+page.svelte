@@ -1,7 +1,20 @@
-<script>
+<script lang="ts">
+	import { onMount } from 'svelte';
 	import Footer from '../components/Footer.svelte';
 	import Header from '../components/Header.svelte';
 	import { link } from '$lib/link';
+	import type { StrapiDocument } from '$lib/types';
+
+	let documents: StrapiDocument[] = [];
+
+	onMount(async () => {
+		try {
+			const res = await fetch('/documents');
+			documents = await res.json();
+		} catch (error) {
+			console.error(error);
+		}
+	});
 </script>
 
 <Header />
@@ -24,27 +37,14 @@
 					</tr>
 				</thead>
 				<tbody>
-					<!-- row 1 -->
-					<tr use:link={'/documents/1'} class="cursor-pointer">
-						<th>1</th>
-						<td>Cy Ganderton</td>
-						<td>Quality Control Specialist</td>
-						<td>0</td>
-					</tr>
-					<!-- row 2 -->
-					<tr>
-						<th>2</th>
-						<td>Hart Hagerty</td>
-						<td>Desktop Support Technician</td>
-						<td>11</td>
-					</tr>
-					<!-- row 3 -->
-					<tr>
-						<th>3</th>
-						<td>Brice Swyre</td>
-						<td>Tax Accountant</td>
-						<td>37</td>
-					</tr>
+					{#each documents as document}
+						<tr use:link={'/documents/' + document.id} class="cursor-pointer">
+							<th>{document.id}</th>
+							<td>{document.attributes.title}</td>
+							<td>{new Date(document.attributes.date).toLocaleDateString('ch-FR')}</td>
+							<td>0</td>
+						</tr>
+					{/each}
 				</tbody>
 			</table>
 		</div>
