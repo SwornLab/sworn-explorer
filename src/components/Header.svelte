@@ -4,6 +4,6 @@
 	<h1 class="text-3xl font-bold text-center text-white">Swørn Data Explorer</h1>
 	<div class="flex justify-center gap-4">
 		<a href="http://sworn.network" target="_blank" class="btn btn-primary">Swørn Network</a>
-		<button class="btn btn-ghost">Contact Us</button>
+		<a href="mailto:info@sworn.network" class="btn btn-ghost">Contact Us</a>
 	</div>
 </div>

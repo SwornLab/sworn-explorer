@@ -51,3 +51,19 @@ export interface StrapiDocumentListResponse {
 export interface StrapiDocumentResponse {
 	data: StrapiDocument;
 }
+
+export interface DocumentSigner {
+	address: string;
+	name: string;
+	valid: boolean;
+}
+
+export interface DocumentSignautre {
+	signature: string;
+	valid: boolean;
+}
+
+export interface DocumentSignerCount {
+	valid: number;
+	invalid: number;
+}

@@ -1,0 +1,31 @@
+query DocumentsList($topic: String) {
+	correctnessReports(where: { topic: $topic }) {
+		edges {
+			node {
+				hash
+				correct
+				signerscount
+			}
+		}
+	}
+}
+
+query Document($hash: String) {
+	correctnessReports(where: { hash: $hash }) {
+		edges {
+			node {
+				topic
+				correct
+				hash
+				timestamp
+				id
+				signature
+				signerscount
+				signers {
+					name
+					key
+				}
+			}
+		}
+	}
+}
