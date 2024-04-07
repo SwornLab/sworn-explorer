@@ -15,13 +15,15 @@
 	import Back from 'svelte-google-materialdesign-icons/Arrow_back.svelte';
 	import Signature from 'svelte-google-materialdesign-icons/Assignment.svelte';
 	import ExternalLink from 'svelte-google-materialdesign-icons/Open_in_new.svelte';
+	import Download from 'svelte-google-materialdesign-icons/Download.svelte';
+	import Check from 'svelte-google-materialdesign-icons/Check.svelte';
+	import Close from 'svelte-google-materialdesign-icons/Close.svelte';
 
 	import { AsyncDocument } from '$lib/graphql/generated';
 	import { calculateAddress } from '$lib/base32';
 
 	import type { StrapiDocument } from '$lib/types';
 	import type { DocumentSigner, DocumentSignautre } from '$lib/types';
-	import type { CorrectnessReport } from '$lib/graphql/generated';
 
 	const shake = (input: sha3.Message) => sha3.shake256(input, 512);
 	const toByteArray = (input: string) =>
@@ -72,9 +74,14 @@
 		return base64.fromByteArray(sia.content);
 	};
 
-	$: if (showingQrCode && document) {
+	$: if (qrCode && showingQrCode && document) {
 		const payload = getQrCodePayload();
 		QRCode.toCanvas(qrCode, payload, { errorCorrectionLevel: 'H' });
+		const computedStyle = window.getComputedStyle(qrCode);
+		const width = parseInt(computedStyle.width.slice(0, -2), 10);
+		const height = parseInt(computedStyle.height.slice(0, -2), 10);
+		qrCode.style.height = `${Math.min(width, height)}px`;
+		qrCode.style.width = `${Math.min(width, height)}px`;
 	}
 
 	const getDocumentFromUnchained = async (hash: string) => {
@@ -142,11 +149,23 @@
 					{:else}
 						<object
 							title="Document"
-							class="rounded-xl shadow-xl grow w-full min-h-[500px] md:min-h-[600px]"
+							class="rounded-xl shadow-xl grow w-full h-full"
 							data={`${PUBLIC_STRAPI_URL}${document.attributes.document.data.attributes.url}#navpanes=0&view=FitH`}
 							width="100%"
 							height="auto"
 						>
+							<div class="card bg-gray-800 flex flex-col gap-8 p-4">
+								<span class="text-xl font-bold"> Not Supported </span>
+								<p class="grow">
+									Your browser does not support PDFs. You can download the PDF to view it:
+								</p>
+								<a
+									class="btn btn-secondary"
+									href={`${PUBLIC_STRAPI_URL}${document.attributes.document.data.attributes.url}`}
+								>
+									<Download /> Download PDF
+								</a>
+							</div>
 						</object>
 					{/if}
 				</div>
@@ -156,14 +175,15 @@
 					class="md:flex-1 p-4 card w-full md:w-4/5 mx-auto bg-gray-800 text-white shadow-xl flex flex-col gap-4"
 				>
 					{#if showingQrCode}
-						<h2 class="text-xl font-bold mb-2">Scan QR Code</h2>
+						<h2 class="text-xl grow font-bold mb-2">Scan QR Code</h2>
 						<p>
 							Scan the QR code below using the Swørn mobile app to sign the document. Once signed,
 							your signature will be recorded on the blockchain.
 						</p>
 
-						<div class="flex flex-1 justify-center items-center">
-							<canvas id="qrcode" bind:this={qrCode}></canvas>
+						<div class="flex justify-center items-center h-full w-full">
+							<canvas id="qrcode" class="max-w-full max-h-full w-auto h-auto" bind:this={qrCode}
+							></canvas>
 						</div>
 
 						<div class="flex justify-between items-center">
@@ -278,7 +298,13 @@
 									<tr>
 										<th> {index + 1} </th>
 										<td> 0x{signature} </td>
-										<td> {valid ? 'Valid' : 'Invalid'} </td>
+										<td>
+											{#if valid}
+												<Check />
+											{:else}
+												<Close />
+											{/if}
+										</td>
 									</tr>
 								{/each}
 							</tbody>
@@ -309,7 +335,13 @@
 										<th> {index + 1} </th>
 										<td> {signer.name} </td>
 										<td> {signer.address} </td>
-										<td> {signer.valid ? 'Valid' : 'Invalid'} </td>
+										<td>
+											{#if signer.valid}
+												<Check />
+											{:else}
+												<Close />
+											{/if}
+										</td>
 									</tr>
 								{/each}
 							</tbody>
