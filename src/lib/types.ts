@@ -62,8 +62,3 @@ export interface DocumentSignautre {
 	signature: string;
 	valid: boolean;
 }
-
-export interface DocumentSignerCount {
-	valid: number;
-	invalid: number;
-}

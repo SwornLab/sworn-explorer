@@ -3,7 +3,7 @@
 	import QRCode from 'qrcode';
 
 	import { page } from '$app/stores';
-	import { PUBLIC_STRAPI_URL, PUBLIC_UNCHAINED_BROKER_URL } from '$env/static/public';
+	import { PUBLIC_STRAPI_URL } from '$env/static/public';
 
 	import { Sia } from 'sializer';
 	import { onMount } from 'svelte';
@@ -19,11 +19,11 @@
 	import Check from 'svelte-google-materialdesign-icons/Check.svelte';
 	import Close from 'svelte-google-materialdesign-icons/Close.svelte';
 
-	import { AsyncDocument } from '$lib/graphql/generated';
 	import { calculateAddress } from '$lib/base32';
 
 	import type { StrapiDocument } from '$lib/types';
 	import type { DocumentSigner, DocumentSignautre } from '$lib/types';
+	import { base64toHex } from '$lib/base64';
 
 	const shake = (input: sha3.Message) => sha3.shake256(input, 512);
 	const toByteArray = (input: string) =>
@@ -62,7 +62,7 @@
 		const hash = toByteArray(document.attributes.hash);
 		const topic = toByteArray(shake(document.attributes.topic));
 		const valid = isDocumentValid;
-		const url = PUBLIC_UNCHAINED_BROKER_URL;
+		const url = 'ws://192.168.1.145:9123/0.13.0';
 
 		const sia = new Sia();
 		sia.addUInt64(timestamp);
@@ -85,31 +85,24 @@
 	}
 
 	const getDocumentFromUnchained = async (hash: string) => {
-		signatures = [];
-		signers = [];
+		const request = await fetch(`/api/unchained/document/${hash}`);
+		const response = await request.json();
 
-		const response = await AsyncDocument({ variables: { hash } });
-		const edges = response.data.correctnessReports.edges || [];
-
-		for (const edge of edges) {
-			const node = edge?.node;
-			if (node) {
-				for (const signer of node.signers) {
-					signers.push({
-						name: signer.name,
-						address: calculateAddress(signer.key),
-						valid: node.correct
-					});
-				}
-				signatures.push({
-					signature: node.signature,
-					valid: node.correct
-				});
-			}
+		if (!response) {
+			signatures = [];
+			signers = [];
+			return;
 		}
 
-		signatures = signatures;
-		signers = signers;
+		signatures = [
+			{ signature: base64toHex(response.data.signature), valid: response.data.correct }
+		];
+
+		signers = response.signers.map((signer: any) => {
+			console.log(signer.shortpublickey);
+			const address = calculateAddress(signer.shortpublickey);
+			return { name: signer.name, address, valid: response.data.correct };
+		});
 	};
 
 	$: if (document) {
@@ -123,7 +116,7 @@
 
 <Header />
 
-<div class="flex flex-col bg-base-200 grow gap-4 items-center pt-10 pb-20">
+<div class="flex flex-col bg-zinc-950 grow gap-4 items-center pt-10 pb-20">
 	<div class="w-4/5 mx-auto flex flex-col gap-14">
 		<div class="flex items-center gap-8">
 			<a href="/" class="btn btn-ghost">
@@ -140,7 +133,7 @@
 		</div>
 
 		<div>
-			<h2 class="text-xl font-bold mb-4 ml-4">
+			<h2 class="text-xl font-bold mb-4 ml-4 font-serif">
 				Document #{id}
 			</h2>
 
@@ -157,7 +150,7 @@
 							width="100%"
 							height="auto"
 						>
-							<div class="card bg-gray-800 flex flex-col gap-8 p-4 text-white">
+							<div class="card bg-zinc-900 flex flex-col gap-8 p-4 text-white">
 								<span class="text-lg font-bold"> Not Supported </span>
 								<p class="grow">
 									Your browser does not support PDFs. You can download the PDF to view it:
@@ -175,13 +168,13 @@
 
 				<!-- Part 2 -->
 				<div
-					class="md:flex-1 p-4 card w-full md:w-4/5 mx-auto bg-gray-800 text-white shadow-xl flex flex-col gap-4"
+					class="md:flex-1 p-4 card w-full md:w-4/5 mx-auto bg-zinc-900 text-white shadow-xl flex flex-col gap-4"
 				>
 					{#if showingQrCode}
 						<h2 class="text-xl grow font-bold mb-2">Scan QR Code</h2>
 						<p>
-							Scan the QR code below using the Swørn mobile app to sign the document. Once signed,
-							your signature will be recorded on the blockchain.
+							Scan the QR code below using the Unchained Identity mobile app to sign the document.
+							Once signed, your signature will be recorded on the blockchain.
 						</p>
 
 						<div class="flex justify-center items-center h-full w-full">
@@ -196,7 +189,7 @@
 							</button>
 						</div>
 					{:else}
-						<h2 class="text-xl font-bold mb-2">Details</h2>
+						<h2 class="text-xl font-bold mb-2 font-serif">Details</h2>
 						<p>
 							You can find the details of the document here. This includes the document's title,
 							author, date of publication, and the number of signers.
@@ -228,10 +221,7 @@
 													<tr>
 														<th>2</th>
 														<td>Date Published</td>
-														<td
-															>{new Date(document.attributes.publishedAt).toLocaleDateString(
-																'ch-FR'
-															)}</td
+														<td>{new Date(document.attributes.publishedAt).toLocaleDateString()}</td
 														>
 													</tr>
 													<!-- row 3 -->
@@ -248,17 +238,19 @@
 									{/await}
 								</div>
 							</div>
-							<a
-								href={document?.attributes?.explorer}
-								target="_blank"
-								class="self-end btn btn-secondary"
-							>
-								<ExternalLink />
-								View on-chain data
-							</a>
+							{#if document?.attributes?.explorer}
+								<a
+									href={document?.attributes?.explorer}
+									target="_blank"
+									class="self-end btn bg-green-400 hover:bg-green-300 transition-colors text-black"
+								>
+									<ExternalLink />
+									View on-chain data
+								</a>
+							{/if}
 						</div>
-						<div class="flex flex-col gap-4">
-							<h3 class="text-lg">Sign the document</h3>
+						<div class="flex flex-col gap-4 mt-4">
+							<h3 class="text-lg font-serif">Sign the document</h3>
 							<p>
 								You can sign this document to verify its authenticity. Once signed, the document
 								will be marked as valid and the signature will be recorded on the blockchain.
@@ -274,7 +266,10 @@
 								<span class="label-text">Document is valid</span>
 							</label>
 						</div>
-						<button class="btn btn-primary" on:click={showQrCode}>
+						<button
+							class="btn bg-green-400 hover:bg-green-300 transition-colors text-black"
+							on:click={showQrCode}
+						>
 							<Signature /> Sign the document
 						</button>
 					{/if}
@@ -284,8 +279,8 @@
 
 		{#if signatures.length}
 			<div class="mb-16">
-				<h4 class="mb-8 ml-4">Signatures</h4>
-				<div class="card w-full mx-auto bg-gray-800 text-white shadow-xl">
+				<h4 class="mb-8 ml-4 font-serif">Signatures</h4>
+				<div class="card w-full mx-auto bg-zinc-900 text-white shadow-xl">
 					<div class="overflow-x-auto">
 						<table class="table">
 							<!-- head -->
@@ -300,7 +295,7 @@
 								{#each signatures as { signature, valid }, index}
 									<tr>
 										<th> {index + 1} </th>
-										<td> 0x{signature} </td>
+										<td class="font-mono"> 0x{signature} </td>
 										<td>
 											{#if valid}
 												<Check />
@@ -319,8 +314,8 @@
 
 		{#if signers.length}
 			<div class="mb-16">
-				<h4 class="mb-8 ml-4">Signers</h4>
-				<div class="card w-full mx-auto bg-gray-800 text-white shadow-xl">
+				<h4 class="mb-8 ml-4 font-serif">Signers</h4>
+				<div class="card w-full mx-auto bg-zinc-900 text-white shadow-xl">
 					<div class="overflow-x-auto">
 						<table class="table">
 							<!-- head -->
@@ -337,7 +332,7 @@
 									<tr>
 										<th> {index + 1} </th>
 										<td> {signer.name} </td>
-										<td> {signer.address} </td>
+										<td class="font-mono"> {signer.address} </td>
 										<td>
 											{#if signer.valid}
 												<Check />

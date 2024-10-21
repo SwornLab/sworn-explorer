@@ -2,7 +2,13 @@
 export default {
 	content: ['./src/**/*.{html,svelte,js,ts}'],
 	theme: {
-		extend: {}
+		extend: {
+			fontFamily: {
+				sans: ['"Geist"'],
+				mono: ['"Geist Mono"'],
+				serif: ['"Aleo"']
+			}
+		}
 	},
 	plugins: [require('@tailwindcss/typography'), require('daisyui')]
 };
