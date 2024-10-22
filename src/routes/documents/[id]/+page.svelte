@@ -62,7 +62,7 @@
 		const hash = toByteArray(document.attributes.hash);
 		const topic = toByteArray(shake(document.attributes.topic));
 		const valid = isDocumentValid;
-		const url = 'ws://192.168.1.145:9123/0.13.0';
+		const url = 'wss://broker.unchained.timeleap.swiss/0.14.0';
 
 		const sia = new Sia();
 		sia.addUInt64(timestamp);
