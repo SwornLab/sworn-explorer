@@ -17,9 +17,9 @@ export const getDocument = async (hashStr: string) => {
 	const hash = Buffer.from(hashStr, 'hex');
 	const document = await documents.findOne({ 'data.hash': hash });
 	if (document) {
-		const signers = db.collection('signer');
-		const signer = await signers.findOne({ signature: document.data.signature });
-		document.signers = signer?.signers;
+		const signersCol = db.collection('signer');
+		const signers = await signersCol.find({ hash: document.hash }).toArray();
+		document.signers = signers.map((signer) => signer.signers).flat();
 	}
 	return document;
 };
@@ -33,9 +33,9 @@ export const getSignatures = async () => {
 			{
 				$lookup: {
 					from: 'signer',
-					let: { attestationSignature: '$data.signature' },
+					let: { attestationHash: '$hash' },
 					pipeline: [
-						{ $match: { $expr: { $eq: ['$signature', '$$attestationSignature'] } } },
+						{ $match: { $expr: { $eq: ['$hash', '$$attestationHash'] } } },
 						{ $project: { signers_count: { $size: '$signers' } } }
 					],
 					as: 'matchingSigners'
@@ -63,13 +63,14 @@ export const getAttestationsBySigner = async (signer: string) => {
 			{
 				$lookup: {
 					from: 'attestation',
-					localField: 'signature',
-					foreignField: 'data.signature',
+					localField: 'hash',
+					foreignField: 'hash',
 					as: 'attestations'
 				}
 			},
 			{ $project: { _id: 0, attestations: 1 } }
 		])
 		.toArray();
+
 	return signers?.[0]?.attestations;
 };

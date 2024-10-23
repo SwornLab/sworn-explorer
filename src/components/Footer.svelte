@@ -2,7 +2,7 @@
 	import Icon from '@iconify/svelte';
 </script>
 
-<footer class="bg-zinc-900 text-white py-8 mt-8 pb-16">
+<footer class=" text-white py-8 mt-8 pb-16">
 	<div class="mx-auto flex flex-wrap justify-between w-4/5">
 		<!-- Large Section -->
 		<div class="w-full md:w-1/2 lg:w-1/4 xl:w-2/3 text-center md:text-left mb-4 md:mb-0 p-4">

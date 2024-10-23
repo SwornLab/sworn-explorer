@@ -27,6 +27,15 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Unchained Explorer</title>
+
+	<meta name="description" content="Explore the Unchained network" />
+	<meta name="keywords" content="Unchained, Explorer, Blockchain, Timeleap" />
+	<meta name="author" content="Timeleap" />
+	<meta name="robots" content="index, follow" />
+</svelte:head>
+
 <Header />
 
 <div class="flex flex-col bg-zinc-950 grow gap-4 items-center pt-20 pb-20">
@@ -36,7 +45,9 @@
 			You can find the latest data published to the Unchained network here.
 		</div>
 	</div>
-	<div class="card w-4/5 mx-auto bg-zinc-900 text-white shadow-xl">
+	<div
+		class="card w-4/5 mx-auto bg-gradient-to-tr from-zinc-950 to-zinc-900 border border-zinc-800 text-white shadow-xl"
+	>
 		<div class="overflow-x-auto">
 			<table class="table">
 				<!-- head -->

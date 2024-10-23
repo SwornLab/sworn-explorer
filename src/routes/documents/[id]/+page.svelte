@@ -114,6 +114,15 @@
 	});
 </script>
 
+<svelte:head>
+	{#if document}
+		<meta name="description" content={document.attributes.title} />
+		<title>{document?.attributes?.title} | Unchained Explorer</title>
+	{:else}
+		<title>Loading | Unchained Explorer</title>
+	{/if}
+</svelte:head>
+
 <Header />
 
 <div class="flex flex-col bg-zinc-950 grow gap-4 items-center pt-10 pb-20">
@@ -168,7 +177,7 @@
 
 				<!-- Part 2 -->
 				<div
-					class="md:flex-1 p-4 card w-full md:w-4/5 mx-auto bg-zinc-900 text-white shadow-xl flex flex-col gap-4"
+					class="md:flex-1 p-4 card w-full md:w-4/5 mx-auto bg-gradient-to-tr from-zinc-950 to-zinc-900 border border-zinc-800 text-white shadow-xl flex flex-col gap-4"
 				>
 					{#if showingQrCode}
 						<h2 class="text-xl grow font-bold mb-2">Scan QR Code</h2>
@@ -195,7 +204,7 @@
 							author, date of publication, and the number of signers.
 						</p>
 						<div class="grow flex flex-col gap-4">
-							<div class="card w-full mx-auto border border-slate-400">
+							<div class="card w-full mx-auto border border-zinc-700">
 								<div class="overflow-x-auto">
 									{#await documentPromise}
 										<div class="loading loading-dots m-4"></div>
@@ -280,7 +289,9 @@
 		{#if signatures.length}
 			<div class="mb-16">
 				<h4 class="mb-8 ml-4 font-serif">Signatures</h4>
-				<div class="card w-full mx-auto bg-zinc-900 text-white shadow-xl">
+				<div
+					class="card w-full mx-auto bg-gradient-to-tr from-zinc-950 to-zinc-900 border border-zinc-800 text-white shadow-xl"
+				>
 					<div class="overflow-x-auto">
 						<table class="table">
 							<!-- head -->
@@ -315,7 +326,9 @@
 		{#if signers.length}
 			<div class="mb-16">
 				<h4 class="mb-8 ml-4 font-serif">Signers</h4>
-				<div class="card w-full mx-auto bg-zinc-900 text-white shadow-xl">
+				<div
+					class="card w-full mx-auto bg-gradient-to-tr from-zinc-950 to-zinc-900 border border-zinc-800 text-white shadow-xl"
+				>
 					<div class="overflow-x-auto">
 						<table class="table">
 							<!-- head -->
