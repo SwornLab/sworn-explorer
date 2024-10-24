@@ -64,11 +64,13 @@
 		const valid = isDocumentValid;
 		const url = 'wss://broker.unchained.timeleap.swiss/0.14.0';
 
+		const encoder = new TextEncoder();
+
 		const sia = new Sia();
 		sia.addUInt64(timestamp);
 		sia.addByteArray8(hash);
 		sia.addByteArray8(topic);
-		sia.addBool(valid);
+		sia.addByteArray32(encoder.encode(JSON.stringify({ correct: valid })));
 		sia.addString8(url);
 
 		return base64.fromByteArray(sia.content);
@@ -95,13 +97,13 @@
 		}
 
 		signatures = [
-			{ signature: base64toHex(response.data.signature), valid: response.data.correct }
+			{ signature: base64toHex(response.data.signature), valid: response.data.meta.correct }
 		];
 
 		signers = response.signers.map((signer: any) => {
 			console.log(signer.shortpublickey);
 			const address = calculateAddress(signer.shortpublickey);
-			return { name: signer.name, address, valid: response.data.correct };
+			return { name: signer.name, address, valid: response.data.meta.correct };
 		});
 	};
 
